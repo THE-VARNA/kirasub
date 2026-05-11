@@ -11,7 +11,7 @@ import {
 const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
 
 const nav = [
-  { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/plans/create", icon: Plus, label: "Create Plan" },
   { href: "/merchant/subscribers", icon: Users, label: "Subscribers" },
   { href: "/subscriber", icon: ShieldCheck, label: "My Subscription" },

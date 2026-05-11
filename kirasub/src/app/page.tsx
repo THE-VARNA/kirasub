@@ -1,221 +1,342 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AppShell } from "@/components/AppShell";
-import {
-  TrendingUp, Users, Clock, AlertTriangle, Zap, ArrowUpRight,
-  Plus, RefreshCw,
-} from "lucide-react";
 import Link from "next/link";
+import { 
+  Zap, ShieldCheck, Globe, CreditCard, Layers, 
+  ArrowRight, Activity, CheckCircle2, ChevronRight 
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-interface Plan {
-  id: string;
-  name: string;
-  priceUsdCents: number;
-  periodDays: number;
-  active: boolean;
-  _count: { subscriptions: number };
-}
+export default function LandingPage() {
+  const [scrolled, setScrolled] = useState(false);
 
-interface Analytics {
-  mrrUsdCents: number;
-  activeSubscribers: number;
-  pendingPayments: number;
-  churnRisk: number;
-  totalPlans: number;
-  plans: Plan[];
-  recentTransactions: {
-    id: string; kirapayId?: string; amount?: number; status: string;
-    plan?: string; subscriber?: string; date: string;
-  }[];
-  recentSubscriptions: {
-    id: string; plan: string; wallet: string; status: string; expires?: string;
-  }[];
-}
-
-function fmt(cents: number) {
-  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
-}
-
-export default function Dashboard() {
-  const [data, setData] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/analytics");
-      setData(await res.json());
-    } catch { /* ignore */ }
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const kpis = data ? [
-    { label: "Monthly Recurring Revenue", value: fmt(data.mrrUsdCents), icon: TrendingUp, color: "#10b981", delta: "+12% vs last month" },
-    { label: "Active Subscribers", value: data.activeSubscribers.toString(), icon: Users, color: "#06b6d4", delta: `${data.totalPlans} active plans` },
-    { label: "Pending Payments", value: data.pendingPayments.toString(), icon: Clock, color: "#f59e0b", delta: "awaiting KIRAPAY" },
-    { label: "Churn Risk", value: data.churnRisk.toString(), icon: AlertTriangle, color: "#f43f5e", delta: "expiring in 7 days" },
-  ] : [];
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <AppShell>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
-        <div>
-          <h1 className="section-title">Dashboard</h1>
-          <p className="section-sub">Subscription revenue and entitlement overview</p>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn btn-ghost btn-sm" onClick={load}>
-            <RefreshCw size={13} /> Refresh
-          </button>
-          <Link href="/plans/create" className="btn btn-primary btn-sm">
-            <Plus size={13} /> Create Plan
-          </Link>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 32 }}>
-        {loading
-          ? [1,2,3,4].map(i => (
-              <div key={i} className="glass kpi-card" style={{ height: 100, background: "rgba(14,16,21,0.5)" }}>
-                <div style={{ width: 80, height: 14, background: "rgba(255,255,255,0.06)", borderRadius: 4, marginBottom: 12 }} />
-                <div style={{ width: 120, height: 28, background: "rgba(255,255,255,0.04)", borderRadius: 6 }} />
-              </div>
-            ))
-          : kpis.map(({ label, value, icon: Icon, color, delta }) => (
-              <div key={label} className="glass kpi-card glass-hover" style={{ position: "relative" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <div className="kpi-label">{label}</div>
-                    <div className="kpi-value" style={{ marginTop: 8 }}>{value}</div>
-                    <div className="kpi-delta" style={{ color: color === "#f43f5e" ? "#f43f5e" : "#6b7280" }}>{delta}</div>
-                  </div>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 10,
-                    background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center",
-                    border: `1px solid ${color}30`,
-                  }}>
-                    <Icon size={18} color={color} />
-                  </div>
-                </div>
-              </div>
-            ))
-        }
-      </div>
-
-      {/* Two-column layout */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-
-        {/* Recent Payments */}
-        <div className="glass" style={{ padding: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, color: "#f1f5f9", fontSize: 14 }}>Recent Payments</div>
-            <Zap size={14} color="#06b6d4" />
-          </div>
-          {loading ? (
-            <div style={{ color: "#374151", fontSize: 13, textAlign: "center", padding: 24 }}>Loading…</div>
-          ) : data?.recentTransactions.length === 0 ? (
-            <div style={{ color: "#374151", fontSize: 13, textAlign: "center", padding: 24 }}>No payments yet. Create a plan to get started.</div>
-          ) : (
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr><th>Plan</th><th>Amount</th><th>Status</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                  {data?.recentTransactions.map(tx => (
-                    <tr key={tx.id}>
-                      <td style={{ color: "#f1f5f9" }}>{tx.plan ?? "—"}</td>
-                      <td className="accent-emerald">{tx.amount ? `$${tx.amount}` : "—"}</td>
-                      <td><span className={`pill pill-${tx.status === "settled" ? "settled" : "pending"}`}>{tx.status}</span></td>
-                      <td style={{ color: "#4b5563" }}>{new Date(tx.date).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+    <div style={{ minHeight: "100vh", background: "#08090c", position: "relative" }}>
+      {/* Navbar */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        padding: "16px 0",
+        transition: "all 0.3s ease",
+        background: scrolled ? "rgba(8,9,12,0.8)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+      }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: "linear-gradient(135deg, #06b6d4, #0891b2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(6,182,212,0.4)",
+            }}>
+              <Activity size={16} color="#fff" />
             </div>
-          )}
-        </div>
-
-        {/* Your Plans Section */}
-        <div className="glass" style={{ padding: 24, gridColumn: "span 2" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, color: "#f1f5f9", fontSize: 14 }}>Your Subscription Plans</div>
-            <Link href="/plans/create" className="btn btn-ghost btn-sm">
-              <Plus size={13} /> New Plan
+            <span style={{ fontSize: 18, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.01em" }}>KiraSub</span>
+          </div>
+          
+          <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 24 }}>
+              <a href="#features" style={{ fontSize: 13, fontWeight: 500, color: "#94a3b8", textDecoration: "none" }} className="nav-link">Features</a>
+              <a href="#how-it-works" style={{ fontSize: 13, fontWeight: 500, color: "#94a3b8", textDecoration: "none" }} className="nav-link">How it works</a>
+              <Link href="/demo" style={{ fontSize: 13, fontWeight: 500, color: "#94a3b8", textDecoration: "none" }} className="nav-link">Demo App</Link>
+            </div>
+            <Link href="/dashboard" className="btn btn-primary btn-sm">
+              Launch App <ArrowRight size={13} />
             </Link>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
-            {data?.plans.map(p => (
-              <div key={p.id} className="glass" style={{ padding: 16, background: "rgba(255,255,255,0.02)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, color: "#f1f5f9" }}>{p.name}</div>
-                    <div style={{ fontSize: 12, color: "#6b7280" }}>${p.priceUsdCents / 100} / {p.periodDays} days</div>
-                  </div>
-                  <span className={`pill ${p.active ? "pill-active" : "pill-expired"}`}>{p.active ? "Active" : "Paused"}</span>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button 
-                    className="btn btn-primary btn-sm" 
-                    style={{ flex: 1, justifyContent: "center" }}
-                    onClick={() => {
-                      const url = `${window.location.origin}/checkout/${p.id}`;
-                      navigator.clipboard.writeText(url);
-                      alert("Checkout link copied to clipboard!");
-                    }}
-                  >
-                    Copy Checkout Link
-                  </button>
-                  <Link href={`/checkout/${p.id}`} className="btn btn-ghost btn-sm">
-                    <ArrowUpRight size={13} />
-                  </Link>
-                </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section style={{ 
+        padding: "160px 24px 100px", 
+        display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+        position: "relative", overflow: "hidden"
+      }}>
+        {/* Glowing background elements */}
+        <div style={{
+          position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)",
+          width: 600, height: 600, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%)",
+          filter: "blur(60px)", pointerEvents: "none", zIndex: 0
+        }} />
+
+        <div style={{ 
+          background: "rgba(6,182,212,0.1)", border: "1px solid rgba(6,182,212,0.2)",
+          padding: "6px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700, 
+          color: "#22d3ee", textTransform: "uppercase", letterSpacing: "0.1em",
+          marginBottom: 24, display: "flex", alignItems: "center", gap: 8,
+          position: "relative", zIndex: 1
+        }}>
+          <Zap size={12} /> Powered by KIRAPAY × Solana
+        </div>
+
+        <h1 style={{ 
+          fontSize: "clamp(40px, 8vw, 72px)", fontWeight: 800, color: "#f1f5f9", 
+          lineHeight: 1.1, maxWidth: 900, marginBottom: 24, letterSpacing: "-0.03em",
+          position: "relative", zIndex: 1
+        }}>
+          The <span style={{ 
+            background: "linear-gradient(135deg, #06b6d4, #22d3ee)", 
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
+          }}>Cross-Chain</span> Subscription Engine.
+        </h1>
+
+        <p style={{ 
+          fontSize: 18, color: "#94a3b8", maxWidth: 600, marginBottom: 40, lineHeight: 1.6,
+          position: "relative", zIndex: 1
+        }}>
+          Bridge the gap between Web2 payments and Web3 entitlements. Accept any token on any chain and grant instant on-chain access on Solana.
+        </p>
+
+        <div style={{ display: "flex", gap: 16, position: "relative", zIndex: 1 }}>
+          <Link href="/dashboard" className="btn btn-primary btn-lg" style={{ padding: "14px 32px" }}>
+            Get Started for Free <ChevronRight size={18} />
+          </Link>
+          <Link href="/demo" className="btn btn-ghost btn-lg" style={{ padding: "14px 32px" }}>
+            View Demo App
+          </Link>
+        </div>
+
+        {/* Interactive Entitlement Hub Visualization */}
+        <div style={{ 
+          marginTop: 80, width: "100%", maxWidth: 1000, 
+          padding: "40px 20px", borderRadius: 32, 
+          background: "rgba(255,255,255,0.01)",
+          border: "1px solid rgba(255,255,255,0.05)",
+          position: "relative", zIndex: 1,
+          overflow: "hidden"
+        }}>
+          {/* Animated Background Pulse */}
+          <div style={{
+            position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+            width: "120%", height: "120%",
+            background: "radial-gradient(circle, rgba(6,182,212,0.05) 0%, transparent 60%)",
+            animation: "pulse-bg 8s infinite ease-in-out", pointerEvents: "none"
+          }} />
+
+          <div style={{ 
+            display: "flex", justifyContent: "space-around", alignItems: "center", 
+            gap: 20, position: "relative", zIndex: 2, flexWrap: "wrap" 
+          }}>
+            
+            {/* Step 1: Global Payment */}
+            <div className="glass" style={{ 
+              padding: 24, width: 240, textAlign: "left",
+              border: "1px solid rgba(255,255,255,0.1)",
+              animation: "float 6s infinite ease-in-out"
+            }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#f43f5e" }} />
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#f59e0b" }} />
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981" }} />
+              </div>
+              <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginBottom: 8, textTransform: "uppercase" }}>Checkout Session</div>
+              <div style={{ height: 12, width: "80%", background: "rgba(255,255,255,0.05)", borderRadius: 4, marginBottom: 8 }} />
+              <div style={{ height: 12, width: "60%", background: "rgba(255,255,255,0.05)", borderRadius: 4, marginBottom: 20 }} />
+              
+              <div style={{ 
+                background: "rgba(6,182,212,0.1)", border: "1px solid rgba(6,182,212,0.2)",
+                padding: 10, borderRadius: 8, display: "flex", alignItems: "center", gap: 10
+              }}>
+                <Globe size={14} color="#06b6d4" />
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#06b6d4" }}>ANY TOKEN / ANY CHAIN</span>
+              </div>
+            </div>
+
+            {/* Connection Arrow 1 */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div className="pulse-line" style={{ width: 60, height: 2, background: "linear-gradient(90deg, #06b6d4, transparent)" }} />
+              <Zap size={16} color="#06b6d4" className="spin-slow" />
+            </div>
+
+            {/* Step 2: Verification Engine */}
+            <div style={{ position: "relative" }}>
+              <div style={{
+                width: 120, height: 120, borderRadius: "50%",
+                background: "rgba(6,182,212,0.1)", border: "2px dashed rgba(6,182,212,0.3)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                animation: "rotate-slow 15s linear infinite"
+              }}>
+                <Activity size={40} color="#06b6d4" />
+              </div>
+              <div style={{ 
+                position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                textAlign: "center", width: 200
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.2em", marginTop: 140 }}>Verification Engine</div>
+              </div>
+            </div>
+
+            {/* Connection Arrow 2 */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div className="pulse-line" style={{ width: 60, height: 2, background: "linear-gradient(90deg, transparent, #10b981)" }} />
+              <CheckCircle2 size={16} color="#10b981" />
+            </div>
+
+            {/* Step 3: Solana Entitlement */}
+            <div className="glass" style={{ 
+              padding: 24, width: 240, textAlign: "left",
+              border: "1px solid rgba(16,185,129,0.2)",
+              background: "rgba(16,185,129,0.03)",
+              animation: "float 7s infinite ease-in-out reverse"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <ShieldCheck size={20} color="#10b981" />
+                <div style={{ fontSize: 9, fontWeight: 700, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 6px", borderRadius: 4 }}>SOLANA PDA</div>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#f1f5f9", marginBottom: 4 }}>Access Verified</div>
+              <div style={{ fontSize: 10, color: "#4b5563", fontFamily: "monospace", marginBottom: 16 }}>8x2f...9a3e</div>
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ height: 6, width: "100%", background: "#10b98133", borderRadius: 3 }} />
+                <div style={{ height: 6, width: "70%", background: "#10b98133", borderRadius: 3 }} />
+              </div>
+
+              <div style={{ 
+                marginTop: 20, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)",
+                display: "flex", justifyContent: "space-between", alignItems: "center"
+              }}>
+                <div style={{ fontSize: 9, color: "#6b7280" }}>EXPIRES IN 30 DAYS</div>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Feature Tags */}
+          <div style={{ 
+            marginTop: 40, display: "flex", justifyContent: "center", gap: 12, 
+            position: "relative", zIndex: 2 
+          }}>
+            {["Real-time Webhooks", "Zero-Latency Verification", "Native Solana State"].map((tag, i) => (
+              <div key={i} style={{
+                fontSize: 10, fontWeight: 700, color: "#94a3b8",
+                background: "rgba(255,255,255,0.03)", padding: "6px 12px", borderRadius: 99,
+                border: "1px solid rgba(255,255,255,0.05)"
+              }}>
+                {tag}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Active Plans */}
-        <div className="glass" style={{ padding: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, color: "#f1f5f9", fontSize: 14 }}>Active Subscriptions</div>
-            <Link href="/merchant/subscribers" style={{ color: "#06b6d4", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
-              View all <ArrowUpRight size={12} />
-            </Link>
-          </div>
-          {loading ? (
-            <div style={{ color: "#374151", fontSize: 13, textAlign: "center", padding: 24 }}>Loading…</div>
-          ) : data?.recentSubscriptions.length === 0 ? (
-            <div style={{ color: "#374151", fontSize: 13, textAlign: "center", padding: 24 }}>
-              No active subscriptions yet.{" "}
-              <Link href="/plans/create" style={{ color: "#06b6d4" }}>Create a plan →</Link>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {data?.recentSubscriptions.map(s => (
-                <div key={s.id} className="glass-hover" style={{
-                  padding: "12px 14px", borderRadius: 10, background: "rgba(255,255,255,0.02)",
-                  border: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center",
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#f1f5f9" }}>{s.plan}</div>
-                    <div className="truncate-addr">{s.wallet}</div>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                    <span className="pill pill-active">active</span>
-                    {s.expires && <div style={{ fontSize: 10, color: "#4b5563" }}>until {new Date(s.expires).toLocaleDateString()}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      </section>
+
+      {/* Features Grid */}
+      <section id="features" style={{ padding: "100px 24px", maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 64 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9", marginBottom: 16 }}>Everything you need to scale.</h2>
+          <p style={{ color: "#94a3b8", fontSize: 16 }}>Built for performance, privacy, and the global economy.</p>
         </div>
-      </div>
-    </AppShell>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
+          {[
+            { icon: Globe, title: "Pay from Any Chain", desc: "Ethereum, Base, Arbitrum, or Solana. Your users pay with whatever they have." },
+            { icon: ShieldCheck, title: "On-Chain Entitlements", desc: "Verified access rights stored as PDAs on Solana. Trustless and composable." },
+            { icon: Layers, title: "Automated Lifecycles", desc: "Webhooks handle everything—granting, renewing, and revoking access automatically." },
+            { icon: CreditCard, title: "Card & Fiat Support", desc: "Allow users to subscribe with traditional payment methods through KIRAPAY." },
+            { icon: Activity, title: "Real-time Analytics", desc: "Track your MRR, active subscribers, and churn risk in a premium dashboard." },
+            { icon: Zap, title: "Developer First", desc: "Integration takes minutes with our SDK and pre-built checkout UI." },
+          ].map((f, i) => (
+            <div key={i} className="glass glass-hover" style={{ padding: 32 }}>
+              <div style={{ 
+                width: 48, height: 48, borderRadius: 12, background: "rgba(6,182,212,0.1)",
+                display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+                border: "1px solid rgba(6,182,212,0.2)"
+              }}>
+                <f.icon size={24} color="#06b6d4" />
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#f1f5f9", marginBottom: 12 }}>{f.title}</h3>
+              <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.6 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section id="how-it-works" style={{ padding: "100px 24px", background: "rgba(255,255,255,0.01)", borderTop: "1px solid rgba(255,255,255,0.03)" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 64 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9", marginBottom: 16 }}>From Payment to Access in Seconds.</h2>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+            {[
+              { step: "01", title: "Create your Plans", desc: "Define pricing, duration, and access tiers in the KiraSub merchant dashboard." },
+              { step: "02", title: "User Pays with Token", desc: "Users pay via a hosted checkout link using any supported token or chain." },
+              { step: "03", title: "Real-time Webhook", desc: "KIRAPAY confirms the transaction and triggers our secure automation." },
+              { step: "04", title: "On-Chain Entitlement", desc: "The KiraSub program mints an entitlement PDA on Solana, granting instant access." },
+            ].map((s, i) => (
+              <div key={i} style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
+                <div style={{ 
+                  fontSize: 48, fontWeight: 900, color: "rgba(6,182,212,0.1)", 
+                  lineHeight: 1, flexShrink: 0, width: 80 
+                }}>{s.step}</div>
+                <div>
+                  <h3 style={{ fontSize: 20, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{s.title}</h3>
+                  <p style={{ color: "#94a3b8", fontSize: 16 }}>{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof / CTA */}
+      <section style={{ padding: "120px 24px", textAlign: "center" }}>
+        <div style={{ 
+          maxWidth: 800, margin: "0 auto", padding: "60px 40px", 
+          background: "linear-gradient(135deg, rgba(6,182,212,0.1), rgba(8,145,178,0.05))",
+          borderRadius: 32, border: "1px solid rgba(6,182,212,0.2)",
+          position: "relative", overflow: "hidden"
+        }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", marginBottom: 20 }}>Ready to scale your recurring revenue?</h2>
+          <p style={{ color: "#94a3b8", fontSize: 18, marginBottom: 40 }}>Join the next generation of Solana applications building on KiraSub.</p>
+          <Link href="/dashboard" className="btn btn-primary btn-lg">
+            Get Started Now
+          </Link>
+          
+          {/* Decorative glow */}
+          <div style={{
+            position: "absolute", bottom: -50, right: -50, width: 200, height: 200,
+            background: "rgba(6,182,212,0.2)", filter: "blur(60px)", borderRadius: "50%"
+          }} />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ padding: "60px 24px 40px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <Activity size={18} color="#06b6d4" />
+              <span style={{ fontSize: 18, fontWeight: 800, color: "#f1f5f9" }}>KiraSub</span>
+            </div>
+            <p style={{ color: "#4b5563", fontSize: 13 }}>Built for the KIRAPAY × Solana Hackathon.</p>
+          </div>
+          <div style={{ display: "flex", gap: 24 }}>
+            <a href="#" style={{ color: "#4b5563", textDecoration: "none", fontSize: 13 }}>Twitter</a>
+            <a href="#" style={{ color: "#4b5563", textDecoration: "none", fontSize: 13 }}>GitHub</a>
+            <a href="#" style={{ color: "#4b5563", textDecoration: "none", fontSize: 13 }}>Docs</a>
+          </div>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 40, color: "#374151", fontSize: 11 }}>
+          © 2026 KiraSub. All rights reserved.
+        </div>
+      </footer>
+
+      <style jsx>{`
+        .nav-link:hover {
+          color: #f1f5f9 !important;
+        }
+      `}</style>
+    </div>
   );
 }
