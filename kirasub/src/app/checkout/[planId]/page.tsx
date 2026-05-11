@@ -94,6 +94,23 @@ export default function CheckoutPage() {
     setInitiating(false);
   };
 
+  const handleSimulate = async () => {
+    if (!subscriptionId || !plan) return;
+    try {
+      await fetch("/api/dev/simulate-webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customOrderId: subscriptionId,
+          price: plan.priceUsdCents / 100,
+        }),
+      });
+      // The polling will automatically pick up the new status
+    } catch (e) {
+      console.error("Failed to simulate webhook:", e);
+    }
+  };
+
   const currentStep: Step = (status?.paymentStatus as Step) ?? "created";
   const stepIndex = STEPS.indexOf(currentStep);
   const isSettled = status?.status === "active";
@@ -267,17 +284,26 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {checkoutUrl && (
-                  <a
-                    href={checkoutUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-primary"
-                    style={{ justifyContent: "center" }}
+                <div style={{ display: "flex", gap: 12 }}>
+                  {checkoutUrl && (
+                    <a
+                      href={checkoutUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary"
+                      style={{ flex: 1, justifyContent: "center" }}
+                    >
+                      <ExternalLink size={14} /> Open KIRAPAY Checkout
+                    </a>
+                  )}
+                  <button 
+                    onClick={handleSimulate}
+                    className="btn btn-ghost"
+                    style={{ flex: 1, justifyContent: "center", border: "1px dashed rgba(6,182,212,0.4)", color: "#06b6d4" }}
                   >
-                    <ExternalLink size={14} /> Open KIRAPAY Checkout
-                  </a>
-                )}
+                    <Zap size={14} /> Simulate Success
+                  </button>
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#4b5563", padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.02)" }}>
                   <Clock size={13} style={{ animation: "spin 3s linear infinite", color: "#06b6d4", flexShrink: 0 }} />
                   Polling for KIRAPAY confirmation every 3 seconds…

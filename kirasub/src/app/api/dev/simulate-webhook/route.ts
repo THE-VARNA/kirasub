@@ -3,9 +3,6 @@ import { DEMO_MODE, buildDemoWebhookPayload } from "@/lib/kirapay/demo";
 
 /** Dev-only: simulate a KIRAPAY webhook in demo mode */
 export async function POST(req: NextRequest) {
-  if (!DEMO_MODE) {
-    return NextResponse.json({ error: "Only available in DEMO_MODE" }, { status: 403 });
-  }
   const { customOrderId, price } = await req.json();
   const payload = buildDemoWebhookPayload(customOrderId, price ?? 9.99);
 
