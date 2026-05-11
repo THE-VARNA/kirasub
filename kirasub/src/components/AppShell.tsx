@@ -28,20 +28,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="sidebar">
         {/* Logo */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: "linear-gradient(135deg, #06b6d4, #0891b2)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(6,182,212,0.4)",
-            }}>
-              <Activity size={18} color="#fff" />
+          <Link href="/" style={{ textDecoration: "none", display: "block" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: "linear-gradient(135deg, #06b6d4, #0891b2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 4px 12px rgba(6,182,212,0.4)",
+              }}>
+                <Activity size={18} color="#fff" />
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#f1f5f9", lineHeight: 1 }}>KiraSub</div>
+                <div style={{ fontSize: 10, color: "#06b6d4", fontWeight: 600, letterSpacing: "0.08em" }}>SUBSCRIPTION ENGINE</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#f1f5f9", lineHeight: 1 }}>KiraSub</div>
-              <div style={{ fontSize: 10, color: "#06b6d4", fontWeight: 600, letterSpacing: "0.08em" }}>SUBSCRIPTION ENGINE</div>
-            </div>
-          </div>
+          </Link>
           {/* Network + Demo badge */}
           <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
             <span className="pill pill-verified" style={{ fontSize: 9 }}>● DEVNET</span>

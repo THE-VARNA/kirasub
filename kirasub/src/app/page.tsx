@@ -28,7 +28,7 @@ export default function LandingPage() {
         borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <div style={{
               width: 32, height: 32, borderRadius: 8,
               background: "linear-gradient(135deg, #06b6d4, #0891b2)",
@@ -38,7 +38,7 @@ export default function LandingPage() {
               <Activity size={16} color="#fff" />
             </div>
             <span style={{ fontSize: 18, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.01em" }}>KiraSub</span>
-          </div>
+          </Link>
           
           <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
             <div style={{ display: "flex", gap: 24 }}>

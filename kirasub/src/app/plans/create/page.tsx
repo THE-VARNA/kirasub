@@ -68,7 +68,7 @@ export default function CreatePlan() {
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data.error));
       setSuccess(true);
-      setTimeout(() => router.push("/"), 1500);
+      setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to create plan");
     }
