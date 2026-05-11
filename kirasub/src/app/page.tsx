@@ -8,12 +8,22 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface Plan {
+  id: string;
+  name: string;
+  priceUsdCents: number;
+  periodDays: number;
+  active: boolean;
+  _count: { subscriptions: number };
+}
+
 interface Analytics {
   mrrUsdCents: number;
   activeSubscribers: number;
   pendingPayments: number;
   churnRisk: number;
   totalPlans: number;
+  plans: Plan[];
   recentTransactions: {
     id: string; kirapayId?: string; amount?: number; status: string;
     plan?: string; subscriber?: string; date: string;
@@ -129,6 +139,45 @@ export default function Dashboard() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Your Plans Section */}
+        <div className="glass" style={{ padding: 24, gridColumn: "span 2" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <div style={{ fontWeight: 700, color: "#f1f5f9", fontSize: 14 }}>Your Subscription Plans</div>
+            <Link href="/plans/create" className="btn btn-ghost btn-sm">
+              <Plus size={13} /> New Plan
+            </Link>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+            {data?.plans.map(p => (
+              <div key={p.id} className="glass" style={{ padding: 16, background: "rgba(255,255,255,0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: "#f1f5f9" }}>{p.name}</div>
+                    <div style={{ fontSize: 12, color: "#6b7280" }}>${p.priceUsdCents / 100} / {p.periodDays} days</div>
+                  </div>
+                  <span className={`pill ${p.active ? "pill-active" : "pill-expired"}`}>{p.active ? "Active" : "Paused"}</span>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ flex: 1, justifyContent: "center" }}
+                    onClick={() => {
+                      const url = `${window.location.origin}/checkout/${p.id}`;
+                      navigator.clipboard.writeText(url);
+                      alert("Checkout link copied to clipboard!");
+                    }}
+                  >
+                    Copy Checkout Link
+                  </button>
+                  <Link href={`/checkout/${p.id}`} className="btn btn-ghost btn-sm">
+                    <ArrowUpRight size={13} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Active Plans */}

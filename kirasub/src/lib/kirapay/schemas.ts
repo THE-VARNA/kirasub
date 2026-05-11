@@ -10,7 +10,7 @@ export const TokenOutSchema = z.object({
 export const CreatePaymentLinkSchema = z.object({
   tokenOut: TokenOutSchema,
   receiver: z.string(),
-  price: z.number().min(0),
+  originalPrice: z.number().min(0),  // KIRAPAY field name (not 'price')
   name: z.string().optional(),
   customOrderId: z.string().optional(),
   redirectUrl: z.string().url().optional(),

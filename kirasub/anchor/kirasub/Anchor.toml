@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-kirasub = "11111111111111111111111111111111"
+kirasub = "25DPjpkgYRoDq1fjCktycLQDCWt4jHfKWXPVp6SaC2Gk"
 
 [programs.devnet]
-kirasub = "11111111111111111111111111111111"
+kirasub = "25DPjpkgYRoDq1fjCktycLQDCWt4jHfKWXPVp6SaC2Gk"
 
 [registry]
 url = "https://api.apr.dev"

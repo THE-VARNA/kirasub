@@ -1,6 +1,6 @@
 /**
- * Server-only KIRAPAY API wrapper.
- * Base URL: https://api.kira-pay.com/api (official docs)
+ * Server-only KIRAPAY API wrapper — LIVE MODE.
+ * Docs: https://docs.kira-pay.com
  * Auth: x-api-key header
  */
 
@@ -10,7 +10,7 @@ const BASE_URL = "https://api.kira-pay.com/api";
 
 function getKey(): string {
   const key = process.env.KIRAPAY_API_KEY;
-  if (!key) throw new Error("KIRAPAY_API_KEY is not set");
+  if (!key || key.startsWith("your_")) throw new Error("KIRAPAY_API_KEY is not configured");
   return key;
 }
 
@@ -23,17 +23,29 @@ async function kfetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   });
-  const json = await res.json();
-  if (!res.ok) {
-    throw new Error(
-      `KIRAPAY API error ${res.status}: ${json?.message ?? JSON.stringify(json)}`
-    );
+
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
+    throw new Error(`KIRAPAY API returned non-JSON response (status ${res.status})`);
   }
+
+  if (!res.ok) {
+    const j = json as Record<string, unknown>;
+    const msg = (j?.message ?? j?.error ?? JSON.stringify(j)) as string;
+    throw new Error(`KIRAPAY API ${res.status}: ${msg}`);
+  }
+
   // Handle both { url } and { data: { url } } response shapes
-  return (json?.data ?? json) as T;
+  return ((json as Record<string, unknown>)?.data ?? json) as T;
 }
 
-/** POST /api/link/generate — create hosted checkout link */
+/**
+ * POST /api/link/generate
+ * Creates a hosted KIRAPAY checkout link that accepts payment from any chain.
+ * The `receiver` should be your Solana wallet address for SOL settlement.
+ */
 export async function createPaymentLink(
   params: CreatePaymentLinkInput
 ): Promise<{ url: string }> {

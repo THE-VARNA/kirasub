@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       linkResult = demoCreatePaymentLink({
         tokenOut: { chainId: "sol", address: "SOL" },
         receiver: merchant.solWallet,
-        price: priceUsd,
+        originalPrice: priceUsd,
         name: `KiraSub: ${plan.name}`,
         customOrderId,
         redirectUrl,
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       linkResult = await createPaymentLink({
         tokenOut: { chainId: "sol", address: "SOL" },
         receiver: merchant.solWallet,
-        price: priceUsd,
+        originalPrice: priceUsd,
         name: `KiraSub: ${plan.name}`,
         customOrderId,
         redirectUrl,

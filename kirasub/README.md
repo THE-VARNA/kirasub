@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KiraSub — Subscription Billing & Access Control for Solana
 
-## Getting Started
+KiraSub is a production-ready subscription engine for Solana applications, powered by the **KIRAPAY** payment engine. It allows users to pay for subscriptions using any token on any supported chain (Ethereum, Base, Arbitrum, etc.) while receiving native Solana access rights (entitlements) managed by an Anchor program.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Cross-Chain Payments**: Powered by KIRAPAY, users can pay from any chain.
+- **On-Chain Entitlements**: Access rights are written as PDAs on Solana Devnet.
+- **Merchant Dashboard**: Plan creation, subscriber management, and revenue analytics.
+- **Premium Glassmorphism UI**: High-end dark mode design for a professional feel.
+- **Automated Webhooks**: Real-time reconciliation from payment to access grant.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 15 (App Router), Tailwind CSS v4, Lucide Icons.
+- **Backend**: Next.js API Routes, Prisma ORM, PostgreSQL (Neon).
+- **Blockchain**: Anchor (Solana), @solana/web3.js.
+- **Payments**: KIRAPAY API & SDK.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Installation
 
-## Learn More
+Follow the [Installation Guide](file:///home/varna/.gemini/antigravity/brain/23d0d879-2c82-408d-89d9-d62775942677/installation_guide.md) for step-by-step setup.
 
-To learn more about Next.js, take a look at the following resources:
+### Quick Start
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Scaffold & Install**:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Setup Env**:
+   Copy `.env.example` to `.env` and fill in your Neon DB URL and KIRAPAY API Key.
 
-## Deploy on Vercel
+3. **Deploy Anchor**:
+   ```bash
+   npm run anchor:build
+   npm run anchor:deploy
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Initialize DB**:
+   ```bash
+   npm run db:push
+   npm run db:seed
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Run**:
+   ```bash
+   npm run dev
+   ```
+
+## 🏗 Architecture
+
+### 1. Payment Flow
+Merchant creates a plan → User initiates checkout → Backend generates KIRAPAY link → User pays (any chain) → KIRAPAY sends webhook → Backend verifies and calls Anchor program.
+
+### 2. Access Control
+The Anchor program stores `Entitlement` PDAs. The frontend (or any protected app) reads these PDAs directly from the Solana ledger to grant/deny access.
+
+## 🔒 Security
+- KIRAPAY API keys are stored strictly on the server-side.
+- Entitlement grants are signed by the Merchant Authority keypair on the backend.
+- Database URLs and secrets are never committed to the repository.
+
+---
+Built for the **KIRAPAY × Solana Hackathon**.

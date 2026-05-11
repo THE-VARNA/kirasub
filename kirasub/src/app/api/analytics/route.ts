@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     totalPlans,
     recentTransactions,
     recentSubscriptions,
+    plans,
   ] = await Promise.all([
     prisma.subscription.count({ where: { status: "active" } }),
     prisma.subscription.count({ where: { status: "pending_payment" } }),
@@ -24,6 +25,11 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 5,
       include: { plan: true, subscriber: true },
+    }),
+    prisma.plan.findMany({
+      where: { merchantId: merchantId === "default" ? "demo_merchant_001" : merchantId },
+      include: { _count: { select: { subscriptions: true } } },
+      orderBy: { createdAt: "desc" },
     }),
   ]);
 
@@ -54,6 +60,7 @@ export async function GET(req: NextRequest) {
     pendingPayments: pendingCount,
     churnRisk,
     totalPlans,
+    plans,
     recentTransactions: recentTransactions.map((tx) => ({
       id: tx.id,
       kirapayId: tx.kirapayId,
