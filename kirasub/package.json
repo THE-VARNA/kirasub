@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "anchor:build": "cd anchor/kirasub && anchor build",
+    "anchor:deploy": "cd anchor/kirasub && anchor deploy --provider.cluster devnet",
+    "anchor:test": "cd anchor/kirasub && anchor test --provider.cluster devnet"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
@@ -38,6 +45,11 @@
     "eslint-config-next": "^15.5.18",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
+    "tsx": "^4.19.4",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   }
 }

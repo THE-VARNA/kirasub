@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,4 +6,137 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id          String   @id @default(cuid())
+  name        String
+  solWallet   String   // Solana pubkey — receives KIRAPAY settlement
+  anchorPda   String?  // MerchantConfig PDA address
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plans       Plan[]
+  subscribers Subscriber[]
+}
+
+model Plan {
+  id            String   @id @default(cuid())
+  merchantId    String
+  merchant      Merchant @relation(fields: [merchantId], references: [id])
+  name          String
+  description   String?
+  priceUsdCents Int      // e.g. 999 = $9.99
+  periodDays    Int      // 30 = monthly
+  features      Json     @default("[]")
+  trialDays     Int      @default(0)
+  active        Boolean  @default(true)
+  anchorPlanId  Int?     // u64 plan_id on-chain
+  anchorPda     String?  // Plan PDA address
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscriptions Subscription[]
+  paymentLinks  KirapayPaymentLink[]
+}
+
+model Subscriber {
+  id            String   @id @default(cuid())
+  merchantId    String
+  merchant      Merchant @relation(fields: [merchantId], references: [id])
+  walletAddress String
+  email         String?
+  createdAt     DateTime @default(now())
+
+  subscriptions Subscription[]
+
+  @@unique([merchantId, walletAddress])
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  subscriberId       String
+  subscriber         Subscriber @relation(fields: [subscriberId], references: [id])
+  planId             String
+  plan               Plan      @relation(fields: [planId], references: [id])
+  status             String    @default("pending_payment") // active|pending_payment|expired|cancelled
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  entitlementPda     String?
+  entitlementTxSig   String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  paymentLinks KirapayPaymentLink[]
+  transactions KirapayTransaction[]
+  receipts     Receipt[]
+  entitlementWrites EntitlementWrite[]
+}
+
+model KirapayPaymentLink {
+  id            String   @id @default(cuid())
+  planId        String
+  plan          Plan     @relation(fields: [planId], references: [id])
+  subscriptionId String?
+  subscription  Subscription? @relation(fields: [subscriptionId], references: [id])
+  kirapayUrl    String
+  linkCode      String?
+  customOrderId String   @unique
+  status        String   @default("pending") // pending|used|expired
+  createdAt     DateTime @default(now())
+
+  transaction KirapayTransaction?
+}
+
+model KirapayTransaction {
+  id               String   @id @default(cuid())
+  kirapayId        String?  @unique // _id from KIRAPAY
+  linkId           String?  @unique
+  link             KirapayPaymentLink? @relation(fields: [linkId], references: [id])
+  subscriptionId   String?
+  subscription     Subscription? @relation(fields: [subscriptionId], references: [id])
+  status           String   @default("pending") // pending|detected|verified|settling|settled|failed
+  txHash           String?
+  price            Float?
+  settlementAmount Float?
+  sender           String?
+  recipient        String?
+  kirapayCreatedAt DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  event       String   // transaction.created|transaction.succeeded|transaction.refund
+  rawPayload  Json
+  processed   Boolean  @default(false)
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime @default(now())
+}
+
+model EntitlementWrite {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  action         String   // grant|renew|revoke
+  entitlementPda String
+  txSignature    String?
+  status         String   @default("pending") // pending|confirmed|failed
+  createdAt      DateTime @default(now())
+}
+
+model Receipt {
+  id               String   @id @default(cuid())
+  subscriptionId   String
+  subscription     Subscription @relation(fields: [subscriptionId], references: [id])
+  kirapayRef       String?
+  solTxSig         String?
+  entitlementPda   String?
+  amountUsdCents   Int
+  planName         String
+  merchantName     String
+  subscriberWallet String
+  createdAt        DateTime @default(now())
 }
