@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
@@ -17,9 +17,8 @@ export default function SubscriberPortal() {
   const { publicKey } = useWallet();
   const [sub, setSub] = useState<SubInfo | null>(null);
   const [loading, setLoading] = useState(false);
-  const [receipts, setReceipts] = useState<{ id: string; planName: string; amountUsdCents: number; createdAt: string }[]>([]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!publicKey) return;
     setLoading(true);
     const res = await fetch(`/api/subscriptions?wallet=${publicKey.toBase58()}`);
@@ -27,9 +26,9 @@ export default function SubscriberPortal() {
     const active = data.subscriptions?.find((s: SubInfo) => s.status === "active") ?? data.subscriptions?.[0] ?? null;
     setSub(active);
     setLoading(false);
-  };
+  }, [publicKey]);
 
-  useEffect(() => { load(); }, [publicKey]);
+  useEffect(() => { load(); }, [publicKey, load]);
 
   const isActive = sub?.status === "active" && sub?.currentPeriodEnd && new Date(sub.currentPeriodEnd) > new Date();
 

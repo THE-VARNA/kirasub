@@ -38,7 +38,6 @@ export default function CheckoutPage() {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = useState<string | null>(searchParams.get("subscriptionId"));
   const [status, setStatus] = useState<CheckoutStatus | null>(null);
-  const [loading, setLoading] = useState(false);
   const [initiating, setInitiating] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
 

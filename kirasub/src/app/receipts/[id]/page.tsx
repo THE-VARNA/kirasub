@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useParams } from "next/navigation";
 import { 
-  Receipt as ReceiptIcon, 
   Download, 
   ExternalLink, 
   Printer, 

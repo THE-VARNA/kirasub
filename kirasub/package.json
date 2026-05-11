@@ -5,15 +5,19 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "npx tsx -r dotenv/config prisma/seed.ts",
     "anchor:build": "cd anchor/kirasub && anchor build",
     "anchor:deploy": "cd anchor/kirasub && anchor deploy --provider.cluster devnet",
     "anchor:test": "cd anchor/kirasub && anchor test --provider.cluster devnet"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",

@@ -10,7 +10,7 @@ export const DEMO_MODE = process.env.DEMO_MODE === "true";
 let _demoCounter = 1000;
 
 export function demoCreatePaymentLink(
-  params: CreatePaymentLinkInput
+  _params: CreatePaymentLinkInput
 ): { url: string } {
   const code = `DEMO_${Date.now()}_${_demoCounter++}`;
   return {

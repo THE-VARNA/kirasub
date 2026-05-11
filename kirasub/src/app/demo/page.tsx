@@ -5,22 +5,22 @@ import { AppShell } from "@/components/AppShell";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { 
   Lock, 
-  Unlock, 
   BarChart3, 
   PieChart, 
   LineChart, 
-  ArrowUpRight, 
-  ArrowDownRight,
   Zap,
-  LayoutGrid,
   RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 
+interface SubInfo { status: string }
+
 export default function ProtectedDemoApp() {
   const { publicKey } = useWallet();
   const [isActive, setIsActive] = useState(false);
+  const [subId, setSubId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     async function checkEntitlement() {
@@ -33,8 +33,9 @@ export default function ProtectedDemoApp() {
       try {
         const res = await fetch(`/api/subscriptions?wallet=${publicKey.toBase58()}`);
         const data = await res.json();
-        const active = data.subscriptions?.find((s: any) => s.status === "active");
+        const active = data.subscriptions?.find((s: SubInfo & { id: string }) => s.status === "active");
         setIsActive(!!active);
+        setSubId(active?.id ?? null);
       } catch (err) {
         console.error("Error checking entitlement:", err);
       } finally {
@@ -45,11 +46,40 @@ export default function ProtectedDemoApp() {
     checkEntitlement();
   }, [publicKey]);
 
+  const handleReset = async () => {
+    if (!subId) return;
+    setResetting(true);
+    try {
+      await fetch(`/api/subscriptions/${subId}/revoke`, { method: "POST" });
+      setIsActive(false);
+      setSubId(null);
+    } catch (err) {
+      console.error("Reset failed:", err);
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <AppShell>
       <div style={{ marginBottom: 32 }}>
-        <h1 className="section-title">Protected Analytics Demo</h1>
-        <p className="section-sub">A demonstration of a premium dashboard that unlocks only when a Solana entitlement is detected.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div>
+            <h1 className="section-title">Protected Analytics Demo</h1>
+            <p className="section-sub">A demonstration of a premium dashboard that unlocks only when a Solana entitlement is detected.</p>
+          </div>
+          {isActive && (
+            <button 
+              className="btn btn-ghost btn-sm" 
+              onClick={handleReset} 
+              disabled={resetting}
+              style={{ color: "#f43f5e", border: "1px solid rgba(244,63,94,0.2)" }}
+            >
+              {resetting ? <RefreshCw size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+              Reset Demo
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ position: "relative", minHeight: "600px" }}>

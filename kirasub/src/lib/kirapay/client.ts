@@ -4,7 +4,7 @@
  * Auth: x-api-key header
  */
 
-import { CreatePaymentLinkInput, KirapayTransaction, WebhookPayload } from "./schemas";
+import { CreatePaymentLinkInput, KirapayTransaction, WebhookPayload, WebhookPayloadSchema } from "./schemas";
 
 const BASE_URL = "https://api.kira-pay.com/api";
 
@@ -109,7 +109,6 @@ export function extractLinkCode(url: string): string | null {
 /** Parse defensive webhook — returns null if payload is unrecognised */
 export function parseWebhookPayload(body: unknown): WebhookPayload | null {
   try {
-    const { WebhookPayloadSchema } = require("./schemas");
     return WebhookPayloadSchema.parse(body);
   } catch {
     return null;

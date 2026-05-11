@@ -1,0 +1,13 @@
+# Exclude the Anchor workspace from Vercel deploys (it is compiled separately)
+anchor/kirasub/target/
+anchor/kirasub/.anchor/
+anchor/kirasub/node_modules/
+
+# Exclude local keypairs — these are set as env vars on Vercel
+anchor/merchant-keypair.json
+
+# Exclude unnecessary test/dev artifacts
+.env.local
+.env*.local
+*.so
+*.so.node

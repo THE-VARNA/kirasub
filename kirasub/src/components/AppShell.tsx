@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import {
-  LayoutDashboard, Plus, Users, ShieldCheck, Receipt, Zap, Activity,
+  LayoutDashboard, Plus, Users, ShieldCheck, Zap, Activity,
 } from "lucide-react";
 
 const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
