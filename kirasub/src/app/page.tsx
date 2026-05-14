@@ -99,9 +99,9 @@ export default function LandingPage() {
           <Link href="/dashboard" className="btn btn-primary btn-lg" style={{ padding: "14px 32px" }}>
             Get Started for Free <ChevronRight size={18} />
           </Link>
-          <Link href="/demo" className="btn btn-ghost btn-lg" style={{ padding: "14px 32px" }}>
-            View Demo App
-          </Link>
+          <a href="https://www.loom.com/share/cd440d8383244a63b28dd2c960cfbee7" target="_blank" rel="noreferrer" className="btn btn-ghost btn-lg" style={{ padding: "14px 32px" }}>
+            Watch Demo
+          </a>
         </div>
 
         {/* Interactive Entitlement Hub Visualization */}
